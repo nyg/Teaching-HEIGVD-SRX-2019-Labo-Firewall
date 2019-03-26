@@ -36,7 +36,7 @@ Vous pouvez répondre aux questions en modifiant directement votre clone du READ
 
 ## Introduction
 
-L’objectif principal de ce laboratoire est de familiariser les étudiants avec les pares-feu et en particulier avec netfilter et iptables. 
+L’objectif principal de ce laboratoire est de familiariser les étudiants avec les pares-feu et en particulier avec netfilter et iptables.
 En premier, une partie théorique permet d’approfondir la rédaction de règles de filtrage.
 
 Par la suite, la mise en pratique d’un pare-feu permettra d’approfondir la configuration et l’utilisation d’un pare-feu ainsi que la compréhension des règles.
@@ -45,30 +45,30 @@ Par la suite, la mise en pratique d’un pare-feu permettra d’approfondir la c
 
 Ce texte se réfère au laboratoire « Pare-feu » à suivre dans le cadre du cours Sécurité des Réseaux, 2019, version 6.2.  Au cours du temps, il a été rédigé, modifié et amélioré par les co-auteurs suivants : Gilles-Etienne Vallat, Alexandre Délez, Olivia Manz, Patrick Mast, Christian Buchs, Sylvain Pasini, Vincent Pezzi, Yohan Martini, Ioana Carlson, Abraham Rubinstein et Frédéric Saam.
 
-## Echéance 
+## Echéance
 
 Ce travail devra être rendu le dimanche après la fin de la 2ème séance de laboratoire, soit au plus tard, **le 31 mars 2019, à 23h.**
 
 # Réseaux cible
 
-## Topologie 
+## Topologie
 
 Durant ce laboratoire, nous allons utiliser une seule topologie réseau :
 
 ![Topologie du réseau virtualisé](figures/Topologie.png)
 
-Notre réseau local (LAN) sera connecté à Internet (WAN) au travers d’un pare-feu. Nous placerons un serveur Web en zone démilitarisée (DMZ). 
+Notre réseau local (LAN) sera connecté à Internet (WAN) au travers d’un pare-feu. Nous placerons un serveur Web en zone démilitarisée (DMZ).
 
-Par conséquent, nous distinguons clairement trois sous-réseaux : 
+Par conséquent, nous distinguons clairement trois sous-réseaux :
 
 - Internet (WAN), le réseau de l'école servira de WAN,
 - le réseau local (LAN),
-- la zone démilitarisée (DMZ). 
+- la zone démilitarisée (DMZ).
 
 Ce réseau sera créé de manière virtuelle. Il sera simulé sur un seul ordinateur utilisant trois conteneurs Docker basés sur le système d’exploitation Ubuntu :
 
 - La première machine, Firewall, fait office de pare-feu. Elle comporte trois interfaces réseaux. Afin que ce poste puisse servir de pare-feu dans notre réseau, iptables sera utilisé.
-- La seconde machine, Client\_In\_LAN, fait office de client dans le réseau local (LAN). 
+- La seconde machine, Client\_In\_LAN, fait office de client dans le réseau local (LAN).
 - La dernière machine, Server\_In\_DMZ, fait office de serveur Web en (DMZ).
 
 Nous allons utiliser les trois interfaces réseaux de la machine Firewall afin de pouvoir connecter le LAN et la DMZ à Internet (WAN). Les machines Client\_In\_LAN et Server\_In\_DMZ comportent chacune une interfaces réseau eth0.
@@ -114,7 +114,7 @@ Pour établir la table de filtrage, voici les **conditions à respecter** dans l
   </li>                                  
 </ol>
 
-_Pour l'autorisation d'accès (**Accept**), il s'agit d'être le plus précis possible lors de la définition de la source et la destination : si l'accès ne concerne qu'une seule machine (ou un groupe), il faut préciser son adresse IP ou son nom (si vous ne pouvez pas encore la déterminer), et non la zone. 
+_Pour l'autorisation d'accès (**Accept**), il s'agit d'être le plus précis possible lors de la définition de la source et la destination : si l'accès ne concerne qu'une seule machine (ou un groupe), il faut préciser son adresse IP ou son nom (si vous ne pouvez pas encore la déterminer), et non la zone.
 Appliquer le principe inverse (être le plus large possible) lorsqu'il faut refuser (**Drop**) une connexion._
 
 _Lors de la définition d'une zone, spécifier l'adresse du sous-réseau IP avec son masque (par exemple, "/24" correspond à 255.255.255.0) ou l'interface réseau (par exemple : "interface WAN") si l'adresse du sous-réseau ne peut pas être déterminé avec précision._
@@ -123,15 +123,23 @@ _Lors de la définition d'une zone, spécifier l'adresse du sous-réseau IP avec
 
 **LIVRABLE : Remplir le tableau**
 
-| Adresse IP source | Adresse IP destination | Type | Port src | Port dst | Action |
-| :---:             | :---:                  | :---:| :------: | :------: | :----: |
-|                   |                        |      |          |          |        |
-|                   |                        |      |          |          |        |
-|                   |                        |      |          |          |        |
-|                   |                        |      |          |          |        |
-|                   |                        |      |          |          |        |
-|                   |                        |      |          |          |        |
-|                   |                        |      |          |          |        |
+| IP source        | IP destination   | Type    | Port src | Port dst | Action | No règle
+| :-:              | :-:              | :-:     | :-:      | :-:      | :-:    | -
+| *                | *                | *       | *        | *        | Drop   | 8.
+| 192.168.100.0/24 | *                | UDP,TCP | *        | 53       | Accept | 1. sortie
+| *                | 192.168.100.0/24 | UDP,TCP | 53       | *        | Accept | 1. entrée
+| 192.168.200.0/24 | 192.168.100.0/24 | ICMP    | *        | *        | Accept | 2. dmz->lan sortie
+| 192.168.100.0/24 | 192.168.200.0/24 | ICMP    | *        | *        | Accept | 2. dmz->lan entrée
+| 192.168.100.0/24 | *                | ICMP    | *        | *        | Accept | 2. lan->wan/dmz sortie
+| *                | 192.168.100.0/24 | ICMP    | *        | *        | Accept | 2. wan/dmz->lan entrée
+| 192.168.100.0/24 | *                | TCP     | *        | 80,8080,443 | Accept | 3. 4. sortie
+| *                | 192.168.100.0/24 | TCP     | 80,8080,443 | *     | Accept | 3. 4. entrée
+| *                | 192.168.200.3    | TCP     | *        | 80       | Accept | 5. sortie
+| 192.168.200.3    | *                | TCP     | 80       | *        | Accept | 5. entrée
+| 192.168.100.3    | 192.168.200.3    | TCP     | *        | 22       | Accept | 6. sortie
+| 192.168.200.3    | 192.168.100.3    | TCP     | 22       | *        | Accept | 6. entrée
+| 192.168.100.3    | 192.168.100.2    | TCP     | *        | 22       | Accept | 7. sortie
+| 192.168.100.2    | 192.168.100.3    | TCP     | 22       | *        | Accept | 7. entrée
 
 ---
 
@@ -239,7 +247,7 @@ En effet, la communication entre les clients dans le LAN et les serveurs dans la
 Dans un terminal de votre client, taper les commandes suivantes :
 
 ```bash
-ip route del default 
+ip route del default
 ip route add default via 192.168.100.2
 ```
 
@@ -248,7 +256,7 @@ ip route add default via 192.168.100.2
 Dans un terminal de votre serveur, taper les commandes suivantes :
 
 ```bash
-ip route del default 
+ip route del default
 ip route add default via 192.168.200.2
 ```
 
@@ -266,7 +274,7 @@ ping 192.168.100.3
 
 ---
 
-La communication est maintenant possible entre les deux machines. Pourtant, si vous essayez de communiquer depuis le client ou le serveur vers l'Internet, ça ne devrait pas encore fonctionner sans une manipulation supplémentaire au niveau du firewall. Vous pouvez le vérifier avec un ping depuis le client ou le serveur vers une adresse Internet. 
+La communication est maintenant possible entre les deux machines. Pourtant, si vous essayez de communiquer depuis le client ou le serveur vers l'Internet, ça ne devrait pas encore fonctionner sans une manipulation supplémentaire au niveau du firewall. Vous pouvez le vérifier avec un ping depuis le client ou le serveur vers une adresse Internet.
 
 Par exemple :
 
@@ -326,7 +334,7 @@ Une règle permet d’autoriser ou d’interdire une connexion. `iptables` met �
 - Le tableau filter permet d’appliquer des règles de filtrage propres d’un firewall
 - Le tableau nat permet de paramétrer la translation d’adresses
 
-`iptables` vous permet la configuration de pare-feux avec et sans état. **Pour ce laboratoire, vous allez utiliser le mode avec état**. 
+`iptables` vous permet la configuration de pare-feux avec et sans état. **Pour ce laboratoire, vous allez utiliser le mode avec état**.
 
 Chaque règle doit être tapée sur une ligne séparée. Référez-vous à la théorie et appuyez-vous sur des informations trouvées sur Internet pour traduire votre tableau de règles de filtrage en commandes `iptables`. Les règles prennent effet immédiatement après avoir appuyé sur &lt;enter>\. Vous pouvez donc les tester au fur et à mesure que vous les configurez.
 
@@ -348,7 +356,7 @@ iptables-restore < iptables.conf
 
 &rarr; Note : pour plus de détails, la commande `iptables –L` affiche toutes les règles en vigueur.
 
-&rarr; Note : avant chaque installation, la commande `iptables -F` efface les règles en vigueur. 
+&rarr; Note : avant chaque installation, la commande `iptables -F` efface les règles en vigueur.
 
 &rarr; Note : avant chaque installation, la commande `iptables –X` efface les chaînes.
 
@@ -358,7 +366,7 @@ iptables-restore < iptables.conf
 
 ## Tests des connections et exemple de l'application d'une règle
 
-Pour chaque manipulation, il est important de **garder les règles déjà créées**, les nouvelles sont ajoutées aux existantes. 
+Pour chaque manipulation, il est important de **garder les règles déjà créées**, les nouvelles sont ajoutées aux existantes.
 
 Pour commencer sur une base fonctionnelle, nous allons configurer le pare-feu pour accepter le **ping** dans certains cas. Cela va permettre de tester la connectivité du réseau.
 
@@ -381,7 +389,7 @@ LIVRABLE : Commandes iptables
 ### Questions
 
 <ol type="a" start="2">
-  <li>Afin de tester la connexion entre le client (Client\_in\_LAN) et le WAN, tapez la commande suivante depuis le client : 
+  <li>Afin de tester la connexion entre le client (Client\_in\_LAN) et le WAN, tapez la commande suivante depuis le client :
   </li>                                  
 </ol>
 
@@ -396,7 +404,7 @@ Faire une capture du ping.
 ---
 
 <ol type="a" start="3">
-  <li>Testez ensuite toutes les règles, depuis le Client_in_LAN puis depuis le serveur Web (Server_in_DMZ) et remplir le tableau suivant : 
+  <li>Testez ensuite toutes les règles, depuis le Client_in_LAN puis depuis le serveur Web (Server_in_DMZ) et remplir le tableau suivant :
   </li>                                  
 </ol>
 
@@ -420,7 +428,7 @@ Faire une capture du ping.
 ## Règles pour le protocole DNS
 
 <ol type="a" start="4">
-  <li>Si un ping est effectué sur un serveur externe en utilisant en argument un nom DNS, le client ne pourra pas le résoudre. Le démontrer à l'aide d'une capture, par exemple avec la commande suivante : 
+  <li>Si un ping est effectué sur un serveur externe en utilisant en argument un nom DNS, le client ne pourra pas le résoudre. Le démontrer à l'aide d'une capture, par exemple avec la commande suivante :
   </li>                                  
 </ol>
 
@@ -449,7 +457,7 @@ LIVRABLE : Commandes iptables
 ---
 
 <ol type="a" start="5">
-  <li>Tester en réitérant la commande ping sur le serveur de test (Google ou autre) : 
+  <li>Tester en réitérant la commande ping sur le serveur de test (Google ou autre) :
   </li>                                  
 </ol>
 
@@ -460,7 +468,7 @@ LIVRABLE : Commandes iptables
 ---
 
 <ol type="a" start="6">
-  <li>Remarques (sur le message du premier ping)? 
+  <li>Remarques (sur le message du premier ping)?
   </li>                                  
 </ol>
 
@@ -504,7 +512,7 @@ LIVRABLE : Commandes iptables
 ---
 
 <ol type="a" start="7">
-  <li>Tester l’accès à ce serveur depuis le LAN utilisant utilisant wget (ne pas oublier les captures d'écran). 
+  <li>Tester l’accès à ce serveur depuis le LAN utilisant utilisant wget (ne pas oublier les captures d'écran).
   </li>                                  
 </ol>
 
@@ -518,7 +526,7 @@ LIVRABLE : Commandes iptables
 ## Règles pour le protocole ssh
 
 <ol type="a" start="8">
-  <li>Créer et appliquer la règle adéquate pour que les **conditions 6 et 7 du cahier des charges** soient respectées. 
+  <li>Créer et appliquer la règle adéquate pour que les **conditions 6 et 7 du cahier des charges** soient respectées.
   </li>                                  
 </ol>
 
@@ -545,7 +553,7 @@ ssh root@192.168.200.3 (password : celui que vous avez configuré)
 ---
 
 <ol type="a" start="9">
-  <li>Expliquer l'utilité de **ssh** sur un serveur. 
+  <li>Expliquer l'utilité de **ssh** sur un serveur.
   </li>                                  
 </ol>
 
@@ -557,7 +565,7 @@ ssh root@192.168.200.3 (password : celui que vous avez configuré)
 ---
 
 <ol type="a" start="10">
-  <li>En général, à quoi faut-il particulièrement faire attention lors de l'écriture des règles du pare-feu pour ce type de connexion ? 
+  <li>En général, à quoi faut-il particulièrement faire attention lors de l'écriture des règles du pare-feu pour ce type de connexion ?
   </li>                                  
 </ol>
 

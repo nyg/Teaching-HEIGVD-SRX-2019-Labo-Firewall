@@ -383,7 +383,24 @@ Commandes iptables :
 
 ```bash
 LIVRABLE : Commandes iptables
+
+# autorise les ping de lan vers dmz
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.100.0/24 -d 192.168.200.0/24 -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply -s 192.168.200.0/24 -d 192.168.100.0/24 -j ACCEPT
+
+# idem en spécifiant les interfaces (optionnel)
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -i eth1 -s 192.168.100.0/24 -o eth2 -d 192.168.200.0/24 -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply -i eth2 -s 192.168.200.0/24 -o eth1 -d 192.168.100.0/24 -j ACCEPT
+
+# autorise les ping de lan vers Web (interface wan)
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.100.0/24 -o eth0 -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply -i eth0 -d 192.168.100.0/24 -j ACCEPT
+
+# autorise les ping de dmz vers lan
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.200.0/24 -d 192.168.100.0/24 -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply -s 192.168.100.0/24 -d 192.168.200.0/24 -j ACCEPT
 ```
+
 ---
 
 ### Questions
@@ -400,6 +417,8 @@ Faire une capture du ping.
 
 ---
 **LIVRABLE : capture d'écran de votre ping vers l'Internet.**
+
+![ping8888](figures/ping_8888.png)
 
 ---
 

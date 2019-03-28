@@ -32,14 +32,14 @@ iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 8080 -j
 iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 443 -j ACCEPT
 iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 443 -j ACCEPT
 
-# Règle 5 : autoriser le traffic du LAN et WAN vers le server web de la DMZ sur le port 80.
+# Règle 5 : autoriser le traffic du LAN et WAN vers le serveur de la DMZ sur le port 80.
 iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -d 192.168.200.3 --dport 80 -j ACCEPT
 iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -s 192.168.200.3 --sport 80 -j ACCEPT
 
 iptables -t filter -A FORWARD -p tcp -i eth0 -d 192.168.200.3 --dport 80 -j ACCEPT
 iptables -t filter -A FORWARD -p tcp -o eth0 -s 192.168.200.3 --sport 80 -j ACCEPT
 
-# Règle 6 : autoriser les connections ssh du client LAN au server web de la DMZ sur le port 22.
+# Règle 6 : autoriser les connections ssh du client LAN au serveur de la DMZ sur le port 22.
 iptables -t filter -A FORWARD -p tcp -s 192.168.100.3 -d 192.168.200.3 --dport 22 -j ACCEPT
 iptables -t filter -A FORWARD -p tcp -d 192.168.100.3 -s 192.168.200.3 --sport 22 -j ACCEPT
 

@@ -123,23 +123,27 @@ _Lors de la définition d'une zone, spécifier l'adresse du sous-réseau IP avec
 
 **LIVRABLE : Remplir le tableau**
 
-| IP source        | IP destination   | Type    | Port src | Port dst | Action | No règle
-| :-:              | :-:              | :-:     | :-:      | :-:      | :-:    | -
-| *                | *                | *       | *        | *        | Drop   | 8.
-| 192.168.100.0/24 | *                | UDP,TCP | *        | 53       | Accept | 1. sortie
-| *                | 192.168.100.0/24 | UDP,TCP | 53       | *        | Accept | 1. entrée
-| 192.168.200.0/24 | 192.168.100.0/24 | ICMP    | *        | *        | Accept | 2. dmz->lan sortie
-| 192.168.100.0/24 | 192.168.200.0/24 | ICMP    | *        | *        | Accept | 2. dmz->lan entrée
-| 192.168.100.0/24 | *                | ICMP    | *        | *        | Accept | 2. lan->wan/dmz sortie
-| *                | 192.168.100.0/24 | ICMP    | *        | *        | Accept | 2. wan/dmz->lan entrée
-| 192.168.100.0/24 | *                | TCP     | *        | 80,8080,443 | Accept | 3. 4. sortie
-| *                | 192.168.100.0/24 | TCP     | 80,8080,443 | *     | Accept | 3. 4. entrée
-| *                | 192.168.200.3    | TCP     | *        | 80       | Accept | 5. sortie
-| 192.168.200.3    | *                | TCP     | 80       | *        | Accept | 5. entrée
-| 192.168.100.3    | 192.168.200.3    | TCP     | *        | 22       | Accept | 6. sortie
-| 192.168.200.3    | 192.168.100.3    | TCP     | 22       | *        | Accept | 6. entrée
-| 192.168.100.3    | 192.168.100.2    | TCP     | *        | 22       | Accept | 7. sortie
-| 192.168.100.2    | 192.168.100.3    | TCP     | 22       | *        | Accept | 7. entrée
+| IP source        | IP destination   | Type    | Port src    | Port dst    | Action | N° règle et description
+| :-:              | :-:              | :-:     | :-:         | :-:         | :-:    | -
+| *                | *                | *       | *           | *           | Drop   | 8. tout interdire par défaut
+| 192.168.100.0/24 | interface WAN    | UDP,TCP | *           | 53          | Accept | 1. requêtes DNS LAN → WAN
+| interface WAN    | 192.168.100.0/24 | UDP,TCP | 53          | *           | Accept | — et retour
+| 192.168.100.0/24 | interface WAN    | ICMP    | –           | –           | Accept | 2. ping LAN → WAN
+| interface WAN    | 192.168.100.0/24 | ICMP    | –           | –           | Accept | — et retour
+| 192.168.100.0/24 | 192.168.200.0/24 | ICMP    | –           | –           | Accept | 2. ping LAN → DMZ
+| 192.168.200.0/24 | 192.168.100.0/24 | ICMP    | –           | –           | Accept | — et retour
+| 192.168.200.0/24 | 192.168.100.0/24 | ICMP    | –           | –           | Accept | 2. ping DMZ → LAN
+| 192.168.100.0/24 | 192.168.200.0/24 | ICMP    | –           | –           | Accept | — et retour
+| 192.168.100.0/24 | interface WAN    | TCP     | *           | 80,8080,443 | Accept | 3. 4. requêtes HTTP/S LAN → WAN
+| interface WAN    | 192.168.100.0/24 | TCP     | 80,8080,443 | *           | Accept | — et retour
+| interface WAN    | 192.168.200.3    | TCP     | *           | 80          | Accept | 5. WAN → serveur web DMZ
+| 192.168.200.3    | interface WAN    | TCP     | 80          | *           | Accept | — et retour
+| 192.168.100.0/24 | 192.168.200.3    | TCP     | *           | 80          | Accept | 5. LAN → serveur web DMZ
+| 192.168.200.3    | 192.168.100.0/24 | TCP     | 80          | *           | Accept | — et retour
+| 192.168.100.3    | 192.168.200.3    | TCP     | *           | 22          | Accept | 6. ssh client LAN  →  serveur dmz
+| 192.168.200.3    | 192.168.100.3    | TCP     | 22          | *           | Accept | — et retour
+| 192.168.100.3    | 192.168.100.2    | TCP     | *           | 22          | Accept | 7. ssh client LAN  →  firewall
+| 192.168.100.2    | 192.168.100.3    | TCP     | 22          | *           | Accept | — et retour
 
 ---
 

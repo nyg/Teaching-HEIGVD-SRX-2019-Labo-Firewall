@@ -3,7 +3,7 @@
 # if first argument is empty, start all servers (f, d, l)
 [ -z $1 ] && $1="fdl"
 
-DOCKER_RUN=docker run -di --rm -e "TERM=xterm-color" --cap-add=NET_ADMIN --cap-add=NET_RAW
+DOCKER_RUN="docker run -di --rm -e "TERM=xterm-color" --cap-add=NET_ADMIN --cap-add=NET_RAW"
 
 # start firewall container and connect it to the dmz and lan networks
 [[ $1 =~ "f" ]] &&

@@ -428,20 +428,20 @@ Faire une capture du ping.
 </ol>
 
 
-| De Client\_in\_LAN à | OK/KO | Commentaires et explications |
-| :---                 | :---: | :---                         |
-| Interface DMZ du FW  |       |                              |
-| Interface LAN du FW  |       |                              |
-| Client LAN           |       |                              |
-| Serveur WAN          |       |                              |
+| De Client\_in\_LAN à | OK/KO | Commentaires et explications    |
+| :---                 | :---: | :---                            |
+| Interface DMZ du FW  | KO    | Le paquet est destiné au firewall, or la policy de la chaine INPUT est à DROP. |
+| Interface LAN du FW  | KO    | Idem                            |
+| Client LAN           | OK    | Ne passe pas par le firewall. |
+| Serveur WAN          | OK    | Possible car autorisé précédement (ping lan vers Web). |
 
 
 | De Server\_in\_DMZ à | OK/KO | Commentaires et explications |
 | :---                 | :---: | :---                         |
-| Interface DMZ du FW  |       |                              |
-| Interface LAN du FW  |       |                              |
-| Serveur DMZ          |       |                              |
-| Serveur WAN          |       |                              |
+| Interface DMZ du FW  | KO    | Le paquet est destiné au firewall, or la policy de la chaine INPUT est à DROP. |
+| Interface LAN du FW  | KO    | Idem |
+| Serveur DMZ          | OK    | Ne passe pas par le firewall |
+| Serveur WAN          | KO    | Non autorisé.                |
 
 
 ## Règles pour le protocole DNS
@@ -461,6 +461,8 @@ ping www.google.com
 
 **LIVRABLE : capture d'écran de votre ping.**
 
+![ping_google_com](figures/ping_google_com.png)
+
 ---
 
 * Créer et appliquer la règle adéquate pour que la **condition 1 du cahier des charges** soit respectée.
@@ -471,6 +473,10 @@ Commandes iptables :
 
 ```bash
 LIVRABLE : Commandes iptables
+
+# udp
+iptables -t filter -A FORWARD -p udp -s 192.168.100.0/24 -o eth0 --dport 53 -j ACCEPT
+iptables -t filter -A FORWARD -p udp -d 192.168.100.0/24 -i eth0 --sport 53 -j ACCEPT
 ```
 
 ---

@@ -477,6 +477,10 @@ LIVRABLE : Commandes iptables
 # udp
 iptables -t filter -A FORWARD -p udp -s 192.168.100.0/24 -o eth0 --dport 53 -j ACCEPT
 iptables -t filter -A FORWARD -p udp -d 192.168.100.0/24 -i eth0 --sport 53 -j ACCEPT
+
+# tcp
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 53 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 53 -j ACCEPT
 ```
 
 ---
@@ -490,6 +494,8 @@ iptables -t filter -A FORWARD -p udp -d 192.168.100.0/24 -i eth0 --sport 53 -j A
 
 **LIVRABLE : capture d'écran de votre ping.**
 
+![ping_google_com_ok.png](figures/ping_google_com_ok.png)
+
 ---
 
 <ol type="a" start="6">
@@ -501,6 +507,12 @@ iptables -t filter -A FORWARD -p udp -d 192.168.100.0/24 -i eth0 --sport 53 -j A
 **Réponse**
 
 **LIVRABLE : Votre réponse ici...**
+
+```
+PING google.com (216.58.215.238) 56(84) bytes of data.
+# On peut voir ici que le nom de domaine google.com a
+# été résolu par l'adresse IP 216.58.215.238.
+```
 
 ---
 
@@ -521,6 +533,18 @@ Commandes iptables :
 
 ```bash
 LIVRABLE : Commandes iptables
+
+# http
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 80 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 80 -j ACCEPT
+
+# port 8080
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 8080 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 8080 -j ACCEPT
+
+# https
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 443 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 443 -j ACCEPT
 ```
 
 ---
@@ -533,6 +557,14 @@ Commandes iptables :
 
 ```bash
 LIVRABLE : Commandes iptables
+
+# lan->dmz 80
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -d 192.168.200.3 --dport 80 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -s 192.168.200.3 --sport 80 -j ACCEPT
+
+# wan->dmz 80
+iptables -t filter -A FORWARD -p tcp -i eth0 -d 192.168.200.3 --dport 80 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -o eth0 -s 192.168.200.3 --sport 80 -j ACCEPT
 ```
 ---
 
@@ -545,6 +577,7 @@ LIVRABLE : Commandes iptables
 
 **LIVRABLE : capture d'écran.**
 
+![nginx_lan_dmz.png](figures/nginx_lan_dmz.png)
 ---
 
 
@@ -561,6 +594,15 @@ Commandes iptables :
 
 ```bash
 LIVRABLE : Commandes iptables
+
+# ssh client lan -> dmz
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.3 -d 192.168.200.3 --dport 22 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.3 -s 192.168.200.3 --sport 22 -j ACCEPT
+
+# ssh client lan -> firewall
+iptables -t filter -A INPUT -p tcp -s 192.168.100.3 -d 192.168.100.2 --dport 22 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp -d 192.168.100.3 -s 192.168.100.2 --sport 22 -j ACCEPT
+
 ```
 
 ---
@@ -574,6 +616,8 @@ ssh root@192.168.200.3 (password : celui que vous avez configuré)
 ---
 
 **LIVRABLE : capture d'écran de votre connexion ssh.**
+
+![ssh_lan_dmz](figures/ssh_lan_dmz.png)
 
 ---
 

@@ -4,3 +4,5 @@ RUN apt-get update && apt-get install net-tools iptables iputils-ping iproute2 w
 
 COPY init-container /init-container
 RUN chmod u+x /init-container/*.sh
+
+CMD [ "/init-container/init.sh" ]

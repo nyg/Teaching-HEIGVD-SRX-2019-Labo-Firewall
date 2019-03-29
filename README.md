@@ -514,12 +514,9 @@ iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 53 -m c
 
 ```
 ping: google.com: Temporary failure in name resolution
-# Le ping ayant reçu un nom de domaine en argument il a d'abord
-# essayé de récupérer l'adresse IP en effectuant des requêtes DNS.
-# Les requêtes DNS étant bloquées, il y a eu un timeout.
 ```
 
-
+Le ping ayant reçu un nom de domaine en argument il a d'abord essayé de récupérer l'adresse IP en effectuant des requêtes DNS. Les requêtes DNS étant bloquées, il y a eu un timeout.
 
 ---
 

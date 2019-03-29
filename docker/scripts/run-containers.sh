@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # if first argument is empty, start all servers (f, d, l)
 [ -z $1 ] && set fdl

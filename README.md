@@ -388,21 +388,22 @@ Commandes iptables :
 ```bash
 LIVRABLE : Commandes iptables
 
-# autorise les ping de lan vers dmz
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.100.0/24 -d 192.168.200.0/24 -j ACCEPT
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply -s 192.168.200.0/24 -d 192.168.100.0/24 -j ACCEPT
+# Prélude
+# Règle 8 : par défault, toute action est interdite.
+iptables -t filter -P INPUT DROP
+iptables -t filter -P OUTPUT DROP
+iptables -t filter -P FORWARD DROP
 
-# idem en spécifiant les interfaces (optionnel)
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -i eth1 -s 192.168.100.0/24 -o eth2 -d 192.168.200.0/24 -j ACCEPT
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply -i eth2 -s 192.168.200.0/24 -o eth1 -d 192.168.100.0/24 -j ACCEPT
+# Règles pour les ping
+# Règle 2 : autoriser les ping du LAN au WAN, du LAN à la DMZ et de la DMZ au LAN.
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.100.0/24 -o eth0 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply   -d 192.168.100.0/24 -i eth0 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
-# autorise les ping de lan vers Web (interface wan)
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.100.0/24 -o eth0 -j ACCEPT
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply -i eth0 -d 192.168.100.0/24 -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.100.0/24 -d 192.168.200.0/24 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply   -d 192.168.100.0/24 -s 192.168.200.0/24 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
-# autorise les ping de dmz vers lan
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.200.0/24 -d 192.168.100.0/24 -j ACCEPT
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply -s 192.168.100.0/24 -d 192.168.200.0/24 -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.200.0/24 -d 192.168.100.0/24 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -d 192.168.200.0/24 -s 192.168.100.0/24 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 ```
 
 ---
@@ -478,13 +479,12 @@ Commandes iptables :
 ```bash
 LIVRABLE : Commandes iptables
 
-# udp
-iptables -t filter -A FORWARD -p udp -s 192.168.100.0/24 -o eth0 --dport 53 -j ACCEPT
-iptables -t filter -A FORWARD -p udp -d 192.168.100.0/24 -i eth0 --sport 53 -j ACCEPT
+# Règle 1 : autoriser les requêtes DNS du LAN au WAN (UDP & TCP).
+iptables -t filter -A FORWARD -p udp -s 192.168.100.0/24 -o eth0 --dport 53 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p udp -d 192.168.100.0/24 -i eth0 --sport 53 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
-# tcp
-iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 53 -j ACCEPT
-iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 53 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 53 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 53 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 ```
 
 ---
@@ -513,10 +513,13 @@ iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 53 -j A
 **LIVRABLE : Votre réponse ici...**
 
 ```
-PING google.com (216.58.215.238) 56(84) bytes of data.
-# On peut voir ici que le nom de domaine google.com a
-# été résolu par l'adresse IP 216.58.215.238.
+ping: google.com: Temporary failure in name resolution
+# Le ping ayant reçu un nom de domaine en argument il a d'abord
+# essayé de récupérer l'adresse IP en effectuant des requêtes DNS.
+# Les requêtes DNS étant bloquées, il y a eu un timeout.
 ```
+
+
 
 ---
 
@@ -538,17 +541,15 @@ Commandes iptables :
 ```bash
 LIVRABLE : Commandes iptables
 
-# http
-iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 80 -j ACCEPT
-iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 80 -j ACCEPT
+# Règle 3 et 4 : autoriser le traffic du LAN au WAN sur les ports 80, 8080 et 443.
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
-# port 8080
-iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 8080 -j ACCEPT
-iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 8080 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 8080 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 8080 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
-# https
-iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 443 -j ACCEPT
-iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 443 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -o eth0 --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -i eth0 --sport 443 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 ```
 
 ---
@@ -562,13 +563,12 @@ Commandes iptables :
 ```bash
 LIVRABLE : Commandes iptables
 
-# lan->dmz 80
-iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -d 192.168.200.3 --dport 80 -j ACCEPT
-iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -s 192.168.200.3 --sport 80 -j ACCEPT
+# Règle 5 : autoriser le traffic du LAN et WAN vers le serveur de la DMZ sur le port 80.
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.0/24 -d 192.168.200.3 --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.0/24 -s 192.168.200.3 --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
-# wan->dmz 80
-iptables -t filter -A FORWARD -p tcp -i eth0 -d 192.168.200.3 --dport 80 -j ACCEPT
-iptables -t filter -A FORWARD -p tcp -o eth0 -s 192.168.200.3 --sport 80 -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -i eth0 -d 192.168.200.3 --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -o eth0 -s 192.168.200.3 --sport 80 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 ```
 ---
 
@@ -599,14 +599,13 @@ Commandes iptables :
 ```bash
 LIVRABLE : Commandes iptables
 
-# ssh client lan -> dmz
-iptables -t filter -A FORWARD -p tcp -s 192.168.100.3 -d 192.168.200.3 --dport 22 -j ACCEPT
-iptables -t filter -A FORWARD -p tcp -d 192.168.100.3 -s 192.168.200.3 --sport 22 -j ACCEPT
+# Règle 6 : autoriser les connections ssh du client LAN au serveur de la DMZ sur le port 22.
+iptables -t filter -A FORWARD -p tcp -s 192.168.100.3 -d 192.168.200.3 --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p tcp -d 192.168.100.3 -s 192.168.200.3 --sport 22 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
-# ssh client lan -> firewall
-iptables -t filter -A INPUT -p tcp -s 192.168.100.3 -d 192.168.100.2 --dport 22 -j ACCEPT
-iptables -t filter -A OUTPUT -p tcp -d 192.168.100.3 -s 192.168.100.2 --sport 22 -j ACCEPT
-
+# Règle 7 : autoriser les connections ssh du client LAN au firewall sur le port 22.
+iptables -t filter -A INPUT  -p tcp -s 192.168.100.3 -d 192.168.100.2 --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp -d 192.168.100.3 -s 192.168.100.2 --sport 22 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 ```
 
 ---
@@ -666,5 +665,7 @@ A présent, vous devriez avoir le matériel nécessaire afin de reproduire la ta
 ---
 
 **LIVRABLE : capture d'écran avec toutes vos règles.**
+
+![all_rules](figures/all_rules.png)
 
 ---

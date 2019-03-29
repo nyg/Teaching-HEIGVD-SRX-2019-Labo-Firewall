@@ -438,7 +438,7 @@ Faire une capture du ping.
 | Interface DMZ du FW  | KO    | Le paquet est destiné au firewall, or la policy de la chaine INPUT est à DROP. |
 | Interface LAN du FW  | KO    | Idem                            |
 | Client LAN           | OK    | Ne passe pas par le firewall. |
-| Serveur WAN          | OK    | Possible car autorisé précédement (ping LAN vers WAN). |
+| Serveur WAN          | OK    | Possible car autorisé précédemment (ping LAN vers WAN). |
 
 
 | De Server\_in\_DMZ à | OK/KO | Commentaires et explications |

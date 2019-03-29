@@ -12,7 +12,7 @@ if [ $HN = $HN_FIREWALL ]
 then
     # enable internet access for lan and dmz machines
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-    ./init-container/firewall-rules.sh
+    #./init-container/firewall-rules.sh
 fi
 
 if [ $HN = $HN_DMZ ]

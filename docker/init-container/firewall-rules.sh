@@ -13,7 +13,7 @@ iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.100.0/
 iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply   -d 192.168.100.0/24 -s 192.168.200.0/24 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
 iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.200.0/24 -d 192.168.100.0/24 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -d 192.168.200.0/24 -s 192.168.100.0/24 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply   -d 192.168.200.0/24 -s 192.168.100.0/24 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
 # Règle 1 : autoriser les requêtes DNS du LAN au WAN (UDP & TCP).
 iptables -t filter -A FORWARD -p udp -s 192.168.100.0/24 -o eth0 --dport 53 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT

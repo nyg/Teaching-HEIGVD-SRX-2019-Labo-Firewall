@@ -410,7 +410,7 @@ iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply -s 192.168.100.0/24
 ### Questions
 
 <ol type="a" start="2">
-  <li>Afin de tester la connexion entre le client (Client\_in\_LAN) et le WAN, tapez la commande suivante depuis le client :
+  <li>Afin de tester la connexion entre le client (Client_in_LAN) et le WAN, tapez la commande suivante depuis le client :
   </li>                                  
 </ol>
 
@@ -437,7 +437,7 @@ Faire une capture du ping.
 | Interface DMZ du FW  | KO    | Le paquet est destiné au firewall, or la policy de la chaine INPUT est à DROP. |
 | Interface LAN du FW  | KO    | Idem                            |
 | Client LAN           | OK    | Ne passe pas par le firewall. |
-| Serveur WAN          | OK    | Possible car autorisé précédement (ping lan vers Web). |
+| Serveur WAN          | OK    | Possible car autorisé précédement (ping LAN vers WAN). |
 
 
 | De Server\_in\_DMZ à | OK/KO | Commentaires et explications |
@@ -635,6 +635,8 @@ ssh root@192.168.200.3 (password : celui que vous avez configuré)
 
 **LIVRABLE : Votre réponse ici...**
 
+Sur un serveur, `ssh` permet à différent utilisateurs de s'y connecter à distance de manière sécurisée. Une telle connexion permet aux utilisateurs d'administrer et de configurer le serveur sans avoir un accès physique au serveur en question.
+
 ---
 
 <ol type="a" start="10">
@@ -647,6 +649,8 @@ ssh root@192.168.200.3 (password : celui que vous avez configuré)
 **Réponse**
 
 **LIVRABLE : Votre réponse ici...**
+
+En général, il faut toujours être le plus précis possible lors de la spécification de nos règles. Notre cas, implique de n'autoriser que les IP associées aux utilisateurs devant pour se connecter au serveur, et ainsi éviter de spécifier une plage d'adresses IP.
 
 ---
 

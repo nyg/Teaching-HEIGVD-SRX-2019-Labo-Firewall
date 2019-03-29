@@ -403,7 +403,7 @@ iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.100.0/
 iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply   -d 192.168.100.0/24 -s 192.168.200.0/24 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 
 iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -s 192.168.200.0/24 -d 192.168.100.0/24 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
-iptables -t filter -A FORWARD -p icmp --icmp-type echo-request -d 192.168.200.0/24 -s 192.168.100.0/24 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+iptables -t filter -A FORWARD -p icmp --icmp-type echo-reply   -d 192.168.200.0/24 -s 192.168.100.0/24 -m conntrack --ctstate ESTABLISHED -j ACCEPT
 ```
 
 ---
@@ -445,7 +445,7 @@ Faire une capture du ping.
 | :---                 | :---: | :---                         |
 | Interface DMZ du FW  | KO    | Le paquet est destiné au firewall, or la policy de la chaine INPUT est à DROP. |
 | Interface LAN du FW  | KO    | Idem |
-| Serveur DMZ          | OK    | Ne passe pas par le firewall |
+| Serveur DMZ          | OK    | Ne passe pas par le firewall. |
 | Serveur WAN          | KO    | Non autorisé.                |
 
 
@@ -634,7 +634,7 @@ ssh root@192.168.200.3 (password : celui que vous avez configuré)
 
 **LIVRABLE : Votre réponse ici...**
 
-Sur un serveur, `ssh` permet à différent utilisateurs de s'y connecter à distance de manière sécurisée. Une telle connexion permet aux utilisateurs d'administrer et de configurer le serveur sans avoir un accès physique au serveur en question.
+Sur un serveur, `ssh` permet à différents utilisateurs de s'y connecter à distance de manière sécurisée. Une telle connexion permet aux utilisateurs d'administrer et de configurer le serveur sans avoir un accès physique au serveur en question.
 
 ---
 
@@ -649,7 +649,7 @@ Sur un serveur, `ssh` permet à différent utilisateurs de s'y connecter à dist
 
 **LIVRABLE : Votre réponse ici...**
 
-En général, il faut toujours être le plus précis possible lors de la spécification de nos règles. Notre cas, implique de n'autoriser que les IP associées aux utilisateurs devant pour se connecter au serveur, et ainsi éviter de spécifier une plage d'adresses IP.
+En général, il faut toujours être le plus précis possible lors de la spécification de nos règles. Dans notre cas, cela implique de n'autoriser que les IP associées aux utilisateurs devant pouvoir se connecter au serveur, et ainsi éviter de spécifier une plage d'adresses IP.
 
 ---
 
